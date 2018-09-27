@@ -1490,14 +1490,18 @@ class LanguageServerCompleter( Completer ):
 
 
 def _CompletionItemToCompletionData( insertion_text, item, fixits ):
+  kind = lsp.ITEM_KIND[ item.get( 'kind', 0 ) ]
+  extra_menu_info = item.get( 'detail', None )
+  if not extra_menu_info:
+    extra_menu_info = kind
   return responses.BuildCompletionData(
     insertion_text,
-    extra_menu_info = item.get( 'detail', None ),
+    extra_menu_info = extra_menu_info,
     detailed_info = ( item[ 'label' ] +
                       '\n\n' +
                       item.get( 'documentation', '' ) ),
     menu_text = item[ 'label' ],
-    kind = lsp.ITEM_KIND[ item.get( 'kind', 0 ) ],
+    kind = kind,
     extra_data = fixits )
 
 

@@ -376,7 +376,7 @@ def LanguageServerCompleter_GetCompletions_List_test():
   completer = MockCompleter()
   request_data = RequestWrap( BuildRequest() )
 
-  completion_response = { 'result': [ { 'label': 'test' } ] }
+  completion_response = { 'result': [ { 'label': 'test', 'kind': 1 } ] }
 
   resolve_responses = [
     { 'result': { 'label': 'test' } },
@@ -388,7 +388,8 @@ def LanguageServerCompleter_GetCompletions_List_test():
                        side_effect = [ completion_response ] +
                                      resolve_responses ):
       assert_that( completer.ComputeCandidatesInner( request_data ),
-                   has_items( has_entries( { 'insertion_text': 'test' } ) ) )
+                   has_items( has_entries( { 'insertion_text': 'test',
+                                             'extra_menu_info': 'Text' } ) ) )
 
 
 def FindOverlapLength_test():
