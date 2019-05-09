@@ -570,6 +570,10 @@ def GetCompletions_UnicodeInLineFilter_test( app ):
 
 @SharedYcmd
 def GetCompletions_QuotedInclude_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of #include "',
     'request': {
@@ -598,6 +602,10 @@ def GetCompletions_QuotedInclude_test( app ):
 
 @SharedYcmd
 def GetCompletions_QuotedInclude_AfterDirectorySeparator_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of #include "quote/',
     'request': {
@@ -621,6 +629,10 @@ def GetCompletions_QuotedInclude_AfterDirectorySeparator_test( app ):
 
 @SharedYcmd
 def GetCompletions_QuotedInclude_AfterDot_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of #include "quote/b.',
     'request': {
@@ -645,6 +657,10 @@ def GetCompletions_QuotedInclude_AfterDot_test( app ):
 
 @SharedYcmd
 def GetCompletions_QuotedInclude_AfterSpace_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of #include "dir with ',
     'request': {
@@ -668,6 +684,10 @@ def GetCompletions_QuotedInclude_AfterSpace_test( app ):
 
 @SharedYcmd
 def GetCompletions_QuotedInclude_Invalid_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of an invalid include statement',
     'request': {
@@ -689,6 +709,10 @@ def GetCompletions_QuotedInclude_Invalid_test( app ):
 
 @SharedYcmd
 def GetCompletions_BracketInclude_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of #include <',
     'request': {
@@ -713,6 +737,10 @@ def GetCompletions_BracketInclude_test( app ):
 
 @SharedYcmd
 def GetCompletions_BracketInclude_AtDirectorySeparator_test( app ):
+  app.post_json(
+    '/load_extra_conf_file',
+    { 'filepath': PathToTestFile( 'test-include',
+                                  '.ycm_extra_conf.py' ) } )
   RunTest( app, {
     'description': 'completion of #include <system/',
     'request': {
@@ -720,7 +748,6 @@ def GetCompletions_BracketInclude_AtDirectorySeparator_test( app ):
       'filepath'  : PathToTestFile( 'test-include', 'main.cpp' ),
       'line_num'  : 10,
       'column_num': 18,
-      'compilation_flags': [ '-x', 'cpp' ],
       # NOTE: when not forcing semantic, it falls back to the filename
       # completer and returns the root folder entries.
       'force_semantic': True

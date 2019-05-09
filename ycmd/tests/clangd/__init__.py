@@ -55,7 +55,7 @@ def setUpPackage():
   subserver, should be done here."""
   global shared_app
 
-  shared_app = SetUpApp()
+  shared_app = SetUpApp( { 'extra_conf_globlist': [ '!*' ] } )
 
 
 def tearDownPackage():
@@ -100,6 +100,7 @@ def IsolatedYcmd( custom_options = {} ):
   def Decorator( test ):
     @functools.wraps( test )
     def Wrapper( *args, **kwargs ):
+      custom_options.update( { 'extra_conf_globlist': [ '!*' ] } )
       with IsolatedApp( custom_options ) as app:
         clangd_completer.CLANGD_COMMAND = clangd_completer.NOT_CACHED
         try:

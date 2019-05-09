@@ -28,9 +28,11 @@ import subprocess
 
 from ycmd import responses
 from ycmd.completers.completer_utils import GetFileLines
+from ycmd.completers.cpp.flags import Flags
 from ycmd.completers.language_server import simple_language_server_completer
 from ycmd.completers.language_server import language_server_completer
 from ycmd.completers.language_server import language_server_protocol as lsp
+from ycmd.responses import NoExtraConfDetected
 from ycmd.utils import ( CLANG_RESOURCE_DIR,
                          GetExecutable,
                          ExpandVariablesInPath,
@@ -214,6 +216,7 @@ class ClangdCompleter( simple_language_server_completer.SimpleLSPCompleter ):
 
     self._clangd_command = GetClangdCommand( user_options )
     self._use_ycmd_caching = user_options[ 'clangd_uses_ycmd_caching' ]
+    self._flags = Flags()
 
 
   def GetServerName( self ):
@@ -226,6 +229,57 @@ class ClangdCompleter( simple_language_server_completer.SimpleLSPCompleter ):
 
   def SupportedFiletypes( self ):
     return ( 'c', 'cpp', 'objc', 'objcpp', 'cuda' )
+
+
+  def _UpdateServerWithFlags( self, request_data ):
+    filename = request_data[ 'filepath' ]
+    client_data = request_data[ 'extra_conf_data' ]
+    # We don't want original filename to be overwritten, since that is the
+    # identifier clangd will use to fetch commands.
+    try:
+      flags, overriden_filename = self._flags.FlagsForFile(
+                                      filename, client_data = client_data )
+      # If no flags were found, let clangd handle the fallback.
+      if len( flags ) == 0:
+        return
+
+      # JSON cannot serialize StringVectors, so covnert to a python list
+      flags = list( flags )
+      # Prepend compiler name to the flags.
+      if flags[ 0 ][ 0 ] == '-':
+        flags = [ "clang-tool" ] + flags
+      # Append the filename if command does not contain it.
+      for flag in flags:
+        if flag == overriden_filename:
+          break
+      else:
+        flags.append( overriden_filename )
+
+      changes = {
+          'compilationDatabaseChanges': {
+              filename: {
+                  # Since all paths are absolute we can use any directory.
+                  'workingDirectory': os.path.dirname( filename ),
+                  'compilationCommand': flags
+              }
+          }
+      }
+      self.GetConnection().SendNotification(
+          lsp.DidChangeConfiguration( changes ) )
+    except NoExtraConfDetected:
+      # clangd can use fallback commands or there might be a compilation
+      # database.
+      pass
+
+
+  def OnFileReadyToParse( self, request_data ):
+    result = super( ClangdCompleter, self ).OnFileReadyToParse( request_data )
+    if not self._initialize_event.is_set():
+      self._OnInitializeComplete(
+        lambda self: self._UpdateServerWithFlags( request_data ) )
+    else:
+      self._UpdateServerWithFlags( request_data )
+    return result
 
 
   def GetType( self, request_data ):
